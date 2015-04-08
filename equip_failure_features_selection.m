@@ -3,43 +3,46 @@ clear, clc, close all;
 % noisy features and see which non-noise features are important
 
 % Preprocessing
+tic
 %load('fisheriris');
 sDirName = '.\Input';
-nHorizon = 20;
-[mFeatures, mTargets] = ReadData(sDirName, nHorizon);
 
+% Horizon of prediction future points
+nHorizon = 1;
+
+% Number of reduced dim
+nDimReductionPercent = 0.25;
+
+%[mFeatures, mTargets, features_set] = ReadData(sDirName, nHorizon);
+toc
+load processed_data;
+
+tic
 % Features selection SVM
 %X = randn(150,10);
 X = mFeatures;
+
+% Number of reduced dim
+%nDim = floor(size(mFeatures, 2) * (1 - nDimReductionPercent));
+nDim = 2;
+
 %X(:,[1 3 5 7 ])= meas;
 %y = species;
 y = mTargets;
 opt = statset('display','iter');
 % Generating a stratified partition is usually preferred to
 % evaluate classification algorithms.
-cvp = cvpartition(y,'k',10); 
+cvp = cvpartition(y,'k',2); 
 %cvp = cvpartition(y,'Leaveout'); 
-[fs,history] = sequentialfs(@classf,X,y,'cv',cvp,'options',opt);
+[fs,history] = sequentialfs(@classf,X,y,'NFeatures', nDim, 'cv',cvp,'options',opt);
 
+save 'features_selection_model';
+toc
 
-% figure;
-% 
-% % ROC curve
-% load fisheriris
-% %x = meas(51:end,1:2);        % iris data, 2 classes and 2 features
-% x = mFeatures;
-% %y = (1:100)'>50;             % versicolor=0, virginica=1
-% y = mTargets;
-% b = glmfit(x,y,'binomial');  % logistic regression
-% p = glmval(b,x,'logit');     % get fitted probabilities for scores
-% 
-% %[X,Y] = perfcurve(species(51:end,:),p,'virginica');
-% [X,Y] = perfcurve(y,p,0);
-% plot(X,Y)
-% xlabel('False positive rate'); ylabel('True positive rate')
-% title('ROC for classification by logistic regression')
-% 
-% % Obtain errors on TPR by vertical averaging
-% %[X,Y] = perfcurve(species(51:end,:),p,'virginica','nboot',1000,'xvals','all');
-% [X,Y] = perfcurve(y,p,0,'nboot',1000,'xvals','all');
-% errorbar(X,Y(:,1),Y(:,2)-Y(:,1),Y(:,3)-Y(:,1)); % plot errors
+tic
+% ROC curves and F1 score
+figure;
+bPlot = 1;
+[errRate, AUC, F1, pr, re] = calc_performance(mFeatures, mTargets, fs, features_set, nDim, nHorizon, bPlot)
+
+toc
