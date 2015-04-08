@@ -12,10 +12,12 @@ nHorizon = 1;
 
 % Number of reduced dim
 nDimReductionPercent = 0.25;
-
-%[mFeatures, mTargets, features_set] = ReadData(sDirName, nHorizon);
-toc
-load processed_data;
+if (~exist('processed_data.mat','file'))
+    [mFeatures, mTargets, features_set] = ReadData(sDirName, nHorizon);
+    toc
+else
+    load processed_data;
+end
 
 tic
 % Features selection SVM
