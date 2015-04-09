@@ -1,36 +1,32 @@
 clear, clc, close all;
-% Perform sequential feature selection for CLASSIFY on iris data with
-% noisy features and see which non-noise features are important
 
-% Preprocessing
 
-%load('fisheriris');
 sDirName = '.\Input';
 
 % Horizon of prediction future points
-nHorizons = [1 20 30];
+nHorizons = [3 5];
 
-% Number of reduced dim
-%nDimReductionPercent = 0.25;
-if (~exist('processed_data.mat','file'))
-    [mFeatures, mTargets, features_set] = ReadData(sDirName, nHorizon);
-    
-else
-    load processed_data;
-end
+
     
 for nHorizonIdx = 1 : length(nHorizons)
     nHorizon = nHorizons(nHorizonIdx);
-
+    fprintf(1, 'Trying nHorizon = %d...\n', nHorizons(nHorizonIdx));
     
-    % Features selection SVM
-    %X = randn(150,10);
+    % Preprocessing
+    if (~exist(['processed_data_horizon_' num2str(nHorizon) '.mat'], 'file'))
+        [mFeatures, mTargets, features_set] = ReadData(sDirName, nHorizon); 
+        save(['processed_data_horizon_' num2str(nHorizon) '.mat']);
+    else
+        load(['processed_data_horizon_' num2str(nHorizon) '.mat']);
+    end
+    
+    % Features selection SVM    
     X = mFeatures;
 
     % Number of reduced dim
     %nDim = floor(size(mFeatures, 2) * (1 - nDimReductionPercent));
-    %nDim = 2;
-    nDim = floor(size(mFeatures, 2));
+    nDim = 5;
+    %nDim = floor(size(mFeatures, 2));
 
     y = mTargets;
     opt = statset('display','iter');
@@ -40,7 +36,8 @@ for nHorizonIdx = 1 : length(nHorizons)
     %cvp = cvpartition(y,'Leaveout'); 
     [fs,history] = sequentialfs(@classf,X,y,'NFeatures', nDim, 'cv',cvp,'options',opt);
 
-    save 'features_selection_model';
+    %save 'features_selection_model';
+    save(['features_selection_model_' num2str(nHorizon) '.mat']);
     
     % ROC curves and F1 score
     bPlot = 1;

@@ -1,4 +1,4 @@
-function err = classf(xtrain,ytrain,xtest,ytest)
+function err = classf_svm(xtrain,ytrain,xtest,ytest)
  %yfit = classify(xtest,xtrain,ytrain,'quadratic');
  
  % Load the data and select features for classification
@@ -6,19 +6,10 @@ function err = classf(xtrain,ytrain,xtest,ytest)
     X = xtrain;
     % Extract the Setosa class
     Y = ytrain;
-    opt = statset('MaxIter',Inf);
+
     % Use a linear support vector machine classifier
     %svmStruct = svmtrain(X,Y,'showplot',true);
-    
-    %"No convergence achieved within maximum number of iterations"
-    %     Then do one or all of:
-    % 
-    % lower the box constraint
-    % increase tolkkt
-    % specify a positive value for kktviolationlevel
-    % try a different kernel function
-    %svmStruct = svmtrain(X,Y,'showplot',false,  'options', opt, 'kktviolationlevel', 5, 'tolkkt', 0.1);
-    svmStruct = svmtrain(X,Y,'showplot',false,  'options', opt);
+    svmStruct = svmtrain(X,Y,'showplot',false);
     
     %figure;
     %C = svmclassify(svmStruct,xtest,'showplot',true);
@@ -26,7 +17,7 @@ function err = classf(xtrain,ytrain,xtest,ytest)
     errRate = sum(ytest~= C)/size(ytest, 1);  %mis-classification rate
     conMat = confusionmat(ytest,C); % the confusion matrix
     yfit = C;
-    [X_perf,Y_perf, T, AUC] = perfcurve(ytest,p,1);
+    [X_perf,Y_perf, T, AUC] = perfcurve(ytest,p,true);
     %err = sum(~strcmp(ytest,yfit));
     %err = errRate
     
